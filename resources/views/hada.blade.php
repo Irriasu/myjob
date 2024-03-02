@@ -117,18 +117,27 @@
     </style>
 </head>
 <body>
+    @php
+        $Type=0;
+        if(auth()->Check())
+        if(auth()->user())
+        $Type=auth()->user()->role;
+        else
+        $Type='user';
+    
+    @endphp
 
     <section class="NavBar">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url('home') }}">MyJob</a>
+                <a class="navbar-brand" href="{{ url('/') }}">MyJob</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{ url('home') }}">Home</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url('/') }}">Home</a>
                         </li>
                         @if($Type == "User")
                             <li class="nav-item">
@@ -139,22 +148,16 @@
                             </li>
                         @elseif($Type == "Candidate")
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('candidate/profile') }}">Profile</a>
+                                <a class="nav-link active" aria-current="page" href="{{ url('/profile') }}">Profile</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('logout') }}">LogOut</a>
-                            </li>
+                            
                         @elseif($Type == "Recruiter")
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('recruiter/profile') }}">Profile</a>
+                                <a class="nav-link active" aria-current="page" href="{{ url('/profile') }}">Profile</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('logout') }}">LogOut</a>
-                            </li>
-                        @else
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('logout') }}">LogOut</a>
-                            </li>
+                            
+                        
+                            
                         @endif
                     </ul>
                 </div>
@@ -166,67 +169,38 @@
 <section>
         <h1>User Information</h1>
     
-        <button class="button" id="InfoBtn"> Update Profile </button>
-        <button class="button" id="PasswordBtn"> Update Password </button>
+        <a href="profile"><button class="button" id="InfoBtn"> Update Profile </button></a>
+        
     
-        @if($user instanceof \App\Models\Candidate)
+        @if($Type == 'Candidate')
     
             <button class="button" id="ApplyBtn"> Applied To </button>
             <button class="button" id="CompetencesBtn"> Competences </button>
             <button class="button" id="DiplomasBtn"> Diplomas </button>
             <button class="button" id="CertificatesBtn"> Certificates </button>
     
-            <button class="button" onclick="deleteCandidate({{ $Candidate->getID() }})">Delete Profile</button>
-            <form action="{{ route('candidate.updateProfile') }}" method="post" id="InfoSection" class="section">
-                @csrf
-                <input type="hidden" name="action" value="UpdateProfile"/>
-                <table>
-                    <tr>
-                        <th>First Name</th>
-                        <td><label>{{ $Candidate->getFirstName() }}</label></td>
-                    </tr>
-                    <tr>
-                        <th>Last Name</th>
-                        <td><label>{{ $Candidate->getLastName() }}</label></td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td><input type="email" name="Email" value="{{ $Candidate->getEmail() }}"></td>
-                    </tr>
-                    <tr>
-                        <th>Phone</th>
-                        <td><input type="text" name="Phone" value="{{ $Candidate->getPhone() }}"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <button class="button" onclick="document.getElementById('fileInput').click()">Upload CV</button>
-                            <input name="CV" type="file" id="fileInput" style="display: none;" onchange="displayFileInfo()" accept=".pdf, .doc, .docx">
-                            <div id="fileInfo"></div>
-                        </td>
-                    </tr>
-                </table>
-                <button class="button" type="submit">Update</button>
-            </form>
-    
+            
+        {{--
             <!-- Competences Section -->
             <div class="section" id="CompetencesSection">
                 <h1>Competences</h1>
-                <a class="button" href="{{ route('competence.create') }}">New</a>
+                <a class="button" href="competence.create">New</a>
                 <table>
                     <tr>
                         <th>Name</th>
                         <th>Level</th>
                         <th colspan="2">Actions</th>
                     </tr>
+                    
                     @foreach($Competences as $Info)
                         <tr>
-                            <form action="{{ route('candidate.updateCompetence') }}" method="post">
+                            <form action="('candidate.updateCompetence')" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
-                                <td><input type="text" name="Name" value="{{ $Info->getName() }}" required></td>
+                                <input type="hidden" name="ID" value=""/>
+                                <td><input type="text" name="Name" value="" required></td>
                                 <td>
                                     <select name="Level" required>
-                                        <option value="{{ $Info->getLevel() }}">{{ $Info->getLevel() }}</option>
+                                        
                                         <option value="Beginner">Beginner</option>
                                         <option value="Intermediate">Intermediate</option>
                                         <option value="Advanced">Advanced</option>
@@ -237,97 +211,99 @@
                                     <button class="button" type="submit">Update</button>
                                 </td>
                             </form>
-                            <form action="{{ route('candidate.deleteCompetence') }}" method="post">
+                            <form action="('candidate.deleteCompetence')" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
+                                <input type="hidden" name="ID" value=""/>
                                 <td><button class="button" type="submit">Delete</button></td>
                             </form>
                         </tr>
-                    @endforeach
+                    @endforeach 
                 </table>
             </div>
+        --}}
     
             <!-- Diplomas Section -->
             <div class="section" id="DiplomasSection">
                 <h1>Diplomas</h1>
-                <a class="button" href="{{ route('diploma.create') }}">New</a>
+                <a class="button" href="('diploma.create')">New</a>
                 <table>
                     <tr>
-                        <th>Name</th>
+                        <th>Titre</th>
                         <th>Date</th>
+                        
                         <th colspan="2">Actions</th>
-                    </tr>
-                    @foreach($Diplomas as $Info)
+                    </tr>{{--
+                    @foreach($diploma as $Info)
+
                         <tr>
-                            <form action="{{ route('candidate.updateDiploma') }}" method="post">
+                            <form action="UpdateDiploma" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
-                                <td><input type="text" name="Name" value="{{ $Info->getName() }}" required></td>
-                                <td><input type="date" name="Date" value="{{ $Info->getDate() }}" required></td>
+                                <input type="hidden" name="id" value="{{$Info->id}}"/>
+                                <td><input type="text" name="Name" value="{{$Info->titre}}" required></td>
+                                <td><input type="date" name="Date" value="{{$Info->date}}" required></td>
                                 <td>
-                                    <input type="hidden" name="action" value="UpdateDiploma"/>
                                     <button class="button" type="submit">Update</button>
                                 </td>
                             </form>
-                            <form action="{{ route('candidate.deleteDiploma') }}" method="post">
+                            <form action="DeleteDiploma" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
+                                <input type="hidden" name="id" value=""/>
                                 <td><button class="button" type="submit">Delete</button></td>
                             </form>
                         </tr>
                     @endforeach
-                </table>
+                </table> --}}
             </div>
     
             <!-- Certificates Section -->
             <div class="section" id="CertificatesSection">
                 <h1>Certificates</h1>
-                <a class="button" href="{{ route('certificate.create') }}">New</a>
+                <a class="button" href="('certificate.create') }}">New</a>
                 <table>
                     <tr>
                         <th>Name</th>
                         <th>Issuer</th>
                         <th colspan="2">Actions</th>
                     </tr>
-                    @foreach($Certificates as $Info)
+                {{--   @foreach($certifs as $Info) 
                         <tr>
-                            <form action="{{ route('candidate.updateCertificate') }}" method="post">
+                            <form action="('candidate.updateCertificate') }}" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
-                                <td><input type="text" name="Name" value="{{ $Info->getName() }}" required></td>
-                                <td><input type="text" name="Issuer" value="{{ $Info->getIssuer() }}" required></td>
+                                <input type="hidden" name="ID" value="Info->getID() }}"/>
+                                <td><input type="text" name="Name" value="Info->getName() }}" required></td>
+                                <td><input type="text" name="Issuer" value="Info->getIssuer() }}" required></td>
                                 <td>
                                     <input type="hidden" name="action" value="UpdateCertificate"/>
                                     <button class="button" type="submit">Update</button>
                                 </td>
                             </form>
-                            <form action="{{ route('candidate.deleteCertificate') }}" method="post">
+                            <form action="('candidate.deleteCertificate') }}" method="post">
                                 @csrf
-                                <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
+                                <input type="hidden" name="ID" value="Info->getID() }}"/>
                                 <td><button class="button" type="submit">Delete</button></td>
                             </form>
                         </tr>
                     @endforeach
-                </table>
+                </table>--}}
             </div>
     
             <!-- Applied Announcements Section -->
 <div class="section" id="ApplySection">
     <h1>Applied Announcements</h1>
     <div class="row">
-        @foreach ($Apply as $A)
+      {{--  @foreach ($Apply as $A)
             <div class="col-3">
                 <div class="Card">
-                    <h2>{{ $A->getName() }} :
+                    <h2>A->getName() }} :
                         @if ($A->getStatus())
                             Ongoing
                         @else
                             Closed
                         @endif
                     </h2>
-                    <p>Type : {{ $A->getType() }}</p>
-                    <p>{{ $A->getDescription() }}</p>
-                    <h3>Created : {{ $A->getDate() }}</h3>
+                    <p>Type : A->getType() }}</p>
+                    <p>A->getDescription() }}</p>
+                    <h3>Created : A->getDate() }}</h3>
                 </div>
             </div>
             <!-- Close the row and start a new row after every fourth announcement -->
@@ -335,68 +311,47 @@
     </div>
     <div class="row">
         @endif
-        @endforeach
+        @endforeach --}}
     </div>
-</div>
 
-@if ($user instanceof \App\Models\Recruiter)
-    <button class="button" onclick="deleteRecruiter({{ $Recruiter->getID() }})">Delete Profile</button>
+</div>
+@endif 
+
+@if ($Type == "Recruiter")
     <form action="{{ url('RecruiterServlet') }}" method="post" id="InfoSection" class="section">
         <input type="hidden" name="action" value="UpdateProfile"/>
         <table>
             <tr>
                 <th>First Name</th>
-                <td><label>{{ $Recruiter->getFirstName() }}</label></td>
+                <td><label>Recruiter->getFirstName() }}</label></td>
             </tr>
             <tr>
                 <th>Last Name</th>
-                <td><label>{{ $Recruiter->getLastName() }}</label></td>
+                <td><label>Recruiter->getLastName() }}</label></td>
             </tr>
             <tr>
                 <th>Email</th>
-                <td><input type="email" name="Email2" value="{{ $Recruiter->getEmail() }}" required></td>
+                <td><input type="email" name="Email2" value="Recruiter->getEmail() }}" required></td>
             </tr>
             <tr>
                 <th>Phone</th>
-                <td><input type="text" name="Phone2" value="{{ $Recruiter->getPhone() }}" required></td>
+                <td><input type="text" name="Phone2" value="Recruiter->getPhone() }}" required></td>
             </tr>
         </table>
         <button class="button" type="submit">Update</button>
     </form>
-@endif
 
-<form action="{{ $user instanceof \App\Models\Recruiter ? url('RecruiterServlet') : url('CandidateServlet') }}" method="post" onsubmit="return validateForm()" id="PasswordSection" class="section">
+
+<form action="{{$Type == "Recruiter" ? url('RecruiterServlet') : url('CandidateServlet') }}" method="post" onsubmit="return validateForm()" id="PasswordSection" class="section">
     <input type="hidden" name="action" value="UpdatePassword"/>
     <table>
         <!-- Password update form fields -->
     </table>
 </form>
-
-@if ($user instanceof \App\Models\Recruiter)
-    <!-- Announcements Section -->
-    <div class="Annonce">
-        <h1>My Announcements</h1>
-        <a class="button" href="{{ url('AddAnnonce.jsp') }}">New</a>
-        <table>
-            <!-- Announcements table headers -->
-            @foreach ($Annonces as $Info)
-                <tr>
-                    <!-- Announcement fields -->
-                    <form action="{{ url('RecruiterServlet') }}" method="post">
-                        <!-- Announcement update form -->
-                    </form>
-                    <form action="{{ url('RecruiterServlet') }}" method="post">
-                        <!-- Announcement delete form -->
-                    </form>
-                    <form action="{{ url('RecruiterServlet') }}" method="post">
-                        <!-- List candidates form -->
-                    </form>
-                </tr>
-            @endforeach
-        </table>
-    </div>
 @endif
 
+@if ($Type == "Recruiter")
+    
 <!-- Announcements Section -->
 <div class="Annonce">
     <h1>My Announcements</h1>
@@ -410,44 +365,46 @@
             <th>Date</th>
             <th colspan="3">Actions</th>
         </tr>
+        {{--
         @foreach ($Annonces as $Info)
             <tr>
                 <form action="{{ url('RecruiterServlet') }}" method="post">
-                    <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
-                    <td><input type="text" name="Name" value="{{ $Info->getName() }}" required></td>
-                    <td><input type="text" name="Description" value="{{ $Info->getDescription() }}" required></td>
+                    <input type="hidden" name="ID" value="Info->getID() }}"/>
+                    <td><input type="text" name="Name" value="Info->getName() }}" required></td>
+                    <td><input type="text" name="Description" value="Info->getDescription() }}" required></td>
                     <td>
                         <select name="Type" required>
-                            <option value="Stage" {{ $Info->getType() === "Stage" ? "selected" : "" }}>Stage</option>
-                            <option value="Emploi" {{ $Info->getType() === "Emploi" ? "selected" : "" }}>Emploi</option>
+                            <option value="Stage" Info->getType() === "Stage" ? "selected" : "" }}>Stage</option>
+                            <option value="Emploi" Info->getType() === "Emploi" ? "selected" : "" }}>Emploi</option>
                         </select>
                     </td>
                     <td>
                         <select name="Status" required>
                             <option value="false" {{ !$Info->getStatus() ? "selected" : "" }}>Closed</option>
-                            <option value="true" {{ $Info->getStatus() ? "selected" : "" }}>OnGoing</option>
+                            <option value="true" Info->getStatus() ? "selected" : "" }}>OnGoing</option>
                         </select>
                     </td>
-                    <td>{{ $Info->getDate() }}</td>
+                    <td>Info->getDate() }}</td>
                     <input type="hidden" name="action" value="UpdateAnnonce"/>
                     <td><button class="button" type="submit">Update</button></td>
                 </form>
                 <form action="{{ url('RecruiterServlet') }}" method="post">
                     <input type="hidden" name="action" value="DeleteAnnonce"/>
-                    <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
+                    <input type="hidden" name="ID" value="Info->getID() }}"/>
                     <td><button class="button" type="submit">Delete</button></td>
                 </form>
                 <form action="{{ url('RecruiterServlet') }}" method="post">
                     <input type="hidden" name="action" value="ListeCandidate"/>
-                    <input type="hidden" name="ID" value="{{ $Info->getID() }}"/>
+                    <input type="hidden" name="ID" value="Info->getID() }}"/>
                     <td><button class="button" type="submit">Candidature</button></td>
                 </form>
             </tr>
-        @endforeach
+        @endforeach --}}
     </table>
 </div>
+@endif
 </section>
-                           
+                          
 <script>
 
     document.getElementById("InfoBtn").addEventListener("click", function() {

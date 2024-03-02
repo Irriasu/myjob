@@ -10,9 +10,10 @@ class CertificatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($id)
     {
-        //
+    $certif = certificat::where('candidat_id',$id);
+    return view('hada',['certifs'=> $certif]);
     }
 
     /**

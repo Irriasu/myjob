@@ -11,15 +11,16 @@
         }
 
         form {
-            margin: 20px auto;
+            margin:30px;
             padding: 20px;
-            width: 50%;
+            width:;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         table {
+            
             width: 100%;
             border-collapse: collapse;
         }
@@ -33,7 +34,14 @@
             background-color: #f2f2f2;
         }
 
-        input[type="text"], select {
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea, select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -56,21 +64,31 @@
     </style>
 </head>
 <body>
-<form action="{{ url('RecruiterServlet') }}" method="post">
+    @php
+    
+    $id=rucruter::find(user_id,auth()->user()->id)->id;
+    @endphp
+<form action="CreateAnonce" method="post">
     @csrf
-    <input type="hidden" name="action" value="AddAnnonce"/>
+    <input type="hidden" name="recruter" value="">
+    
     <table>
         <tr>
             <th>Name</th>
             <th>Description</th>
+            <th>Avantages</th>
+            <th>Skills</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Date</th>
+            
             <th colspan="2">Actions</th>
         </tr>
         <tr>
-            <td><input type="text" name="Name" value="" required></td>
-            <td><input type="text" name="Description" value="" required></td>
+            
+            <td><input type="text" name="Name" value="" required></textarea></td>
+            <td><textarea name="Description" value="" required></textarea></td>
+            <td><textarea name="avantages" value="" required></textarea></td>
+            <td><textarea name="skills" value="" required></textarea></td>
             <td>
                 <select name="Type" required>
                     <option value="Stage">Stage</option>

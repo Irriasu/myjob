@@ -85,6 +85,7 @@
         }
 
         .Annonces {
+            height:90vh;
             display: flex;
             justify-content: flex-start; /* Align cards to the left */
             flex-wrap: wrap;
@@ -94,46 +95,54 @@
 </head>
 <body>
     @php
-       $Type = 'User' ;
+        $Type=0;
+        if(auth()->Check())
+        if(auth()->user())
+        $Type=auth()->user()->role;
+
+        if($Type=='Candidate') {
+        $item = $item = \App\Models\candidat::where('user_id', auth()->user()->id)->first();
+        $id = $item->id;}
+        elseif($Type=='Recruiter'){
+        $item = \App\Models\rucruter::where('user_id',auth()->user()->id);
+        $id = $item->id;}
+        else
+        $Type = "user";
+        
+    
     @endphp
     {{-- NAV BAR --}}
     <section class="NavBar">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url('Servlet') }}">MyJob</a>
+                <a class="navbar-brand" href="/">MyJob</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{ url('Servlet') }}">Home</a>
+                            <a class="nav-link active" aria-current="page" href="/">Home</a>
                         </li>
-                        @if($Type == 'User')
+                        @if($Type == 'user')
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('Login.jsp') }}">Login</a>
+                                <a class="nav-link active" aria-current="page" href="/login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('SignUp.jsp') }}">Sign Up</a>
+                                <a class="nav-link active" aria-current="page" href="/register">Sign Up</a>
                             </li>
                         @elseif($Type == 'Candidate')
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('CandidateServlet?action=Profile') }}">Profile</a>
+                                <a class="nav-link active" aria-current="page" href="dashboard">Profile</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('Servlet?action=LogOut') }}">LogOut</a>
-                            </li>
+                            
                         @elseif($Type == 'Recruiter')
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('RecruiterServlet?action=Profile') }}">Profile</a>
+                                <a class="nav-link active" aria-current="page" href="dashboard">Profile</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('Servlet?action=LogOut') }}">LogOut</a>
-                            </li>
+                            
                         @else
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url('Servlet?action=LogOut') }}">LogOut</a>
-                            </li>
+                            
                         @endif
                     </ul>
                 </div>
@@ -144,51 +153,64 @@
     {{-- START OF NEW SECTION --}}
     <section class="Header">
         <center>
-            @if($Type == 'User')
-                <form action="{{ url('Login.jsp') }}" method="post">
-                    <button type="submit" class="button">Cansisate : Deposer Cv</button>
-                    <button type="submit" class="button">Recruteur : Publier Annonce</button>
-                </form>
+            @if($Type == 'user')
+                <a href="login">
+                    <button type="submit" class="button">Candidate : Deposer Cv</button>
+                    <button type="submit" class="button">Recruteur : Deposer Annonce</button>
+                </a>
             @elseif($Type == 'Admin')
-                <form action="{{ url('AdminServlet') }}" method="post">
-                    <button type="submit" name="action" value="Universities" class="button">Universities</button>
-                    <button type="submit" name="action" value="ManageUsers" class="button">Manage Users</button>
-                </form>
+            <a href="UsersIndex">
+                <button type="submit" class="button">Manage Users</button>    
+            </a><a href="UniversitiesIndex">
+                <button type="submit" class="button"> Universities</button>    
+            </a>
             @elseif($Type == 'Candidate')
-                {{-- Add your specific candidate logic here --}}
+            <a href="DeposerCv">
+                <button type="submit" class="button"> Deposer CV</button>    
+            </a>
+            <a href="DeposerCv">
+                <button type="submit" class="button"> Postuler</button>    
+            </a>
             @elseif($Type == 'Recruiter')
-                {{-- Add your specific recruiter logic here --}}
+            <a href="DeposerAnonce">
+                <button type="submit" class="button">Deposer anonces</button>
+            </a>
+            <a href="ListeAnonce">
+                <button type="submit" class="button">Liste des Annonce</button>
+            </a>
             @endif
         </center>
     </section>
 
     {{-- ANNONCES SECTION --}}
     <section class="Annonces">
+        
+        
         <center>
             <div class="box">
-               {{--
-                @foreach ($requestScope['Annonces'] as $A)
+               
+                @foreach ($anonces as $A)
                     <div class="Card">
-                        <h2>{{ $A->getName() }} :
-                            @if($A->getStatus())
+                        <h2>{{ $A->post }} :
+                            @if($A->status)
                                 Ongoing
                             @else
                                 Closed
                             @endif
                         </h2>
-                        <p>Type : {{ $A->getType() }}</p>
-                        <p>{{ $A->getDescription() }}</p>
-                        <h3> Created : {{ $A->getDate() }}</h3>
+                        
+                        <p>{{ $A->description }}</p>
+                        <h3> Created : {{ $A->created_at }}</h3>
                         @if($Type == 'Candidate')
-                            <form action="{{ url('CandidateServlet') }}" method="get">
+                            <form action="apply" method="post">
                                 <input type="hidden" name="action" value="Apply">
-                                <input type="hidden" name="ID" value="{{ $A->getID() }}">
+                                <input type="hidden" name="anonce_id" value="{{$A->id}}">
                                 <button type="submit" class="apply-button">Apply</button>
                             </form>
                         @endif
                     </div>
                 @endforeach
-                --}}
+                
             </div>
         </center>
     </section>
